@@ -11,7 +11,7 @@ jobs:
       run:
         shell: bash
     env:
-      IMMOLENS_CI_PYTHON: ${{ runner.os == 'Windows' && '.venv/Scripts/python.exe' || '.venv/bin/python' }}
+      IMMOLENS_CI_PYTHON: ${{ matrix.os == 'windows-latest' && '.venv/Scripts/python.exe' || '.venv/bin/python' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
