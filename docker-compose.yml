@@ -1,14 +1,19 @@
 # docker-compose.yml
-version: '3.8'
-
 services:
+  train:
+    build: .
+    profiles: ["training"]
+    volumes:
+      - ./modelle:/app/modelle
+      - ./mlruns:/app/mlruns
+    command: python train.py
+
   api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-      - "8501:8501"
     volumes:
       - ./modelle:/app/modelle
     command: python api.py
