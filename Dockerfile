@@ -1,5 +1,5 @@
 # Dockerfile
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8000 8501
 
-CMD ["sh", "-c", "python api.py & streamlit run app.py --server.port=8501 --server.address=0.0.0.0"]
+CMD ["python", "api.py"]

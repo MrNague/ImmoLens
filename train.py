@@ -1,262 +1,106 @@
-# train.py
-# ============================================
-# TRAINING-SKRIPT FÜR IMMOBILIENPREISVORHERSAGE
-# ============================================
-
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.preprocessing import StandardScaler
-import joblib
+"""Reproducible synthetic demo training. These prices are not market observations."""
+import argparse
+import hashlib
+import json
 import os
+from pathlib import Path
+
+import joblib
 import mlflow
-import mlflow.sklearn
-from datetime import datetime
+import numpy as np
+import pandas as pd
+import sklearn
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, StandardScaler
 
-# ============================================
-# DATENGENERIERUNG
-# ============================================
+from features import CITIES, FEATURE_COLUMNS, RAW_COLUMNS, REFERENCE_YEAR, erstelle_features
 
-def generiere_daten(anzahl=1000):
-    """
-    Generiert synthetische Immobiliendaten für Deutschland
-    """
-    np.random.seed(42)
-    
-    # Features
-    flaeche = np.random.normal(80, 30, anzahl).clip(30, 250).astype(int)
-    zimmer = (flaeche / 25 + np.random.normal(0, 1, anzahl)).clip(1, 8).astype(int)
-    schlafzimmer = (zimmer * 0.5 + np.random.normal(0, 1, anzahl)).clip(1, 5).astype(int)
-    etage = np.random.randint(0, 10, anzahl)
-    
-    # Deutsche Postleitzahlen (vereinfacht)
-    plz_regionen = {
-        'Berlin': 10000, 'Hamburg': 20000, 'München': 80000,
-        'Köln': 50000, 'Frankfurt': 60000, 'Stuttgart': 70000
-    }
-    stadt = np.random.choice(list(plz_regionen.keys()), anzahl)
-    plz = [plz_regionen[s] + np.random.randint(0, 1000) for s in stadt]
-    
-    baujahr = np.random.randint(1950, 2023, anzahl)
-    entfernung_bahn = np.random.uniform(0, 5, anzahl).round(1)
-    garten = np.random.choice([0, 1], anzahl, p=[0.4, 0.6])
-    balkon = np.random.choice([0, 1], anzahl, p=[0.3, 0.7])
-    
-    # Preisberechnung (realistisch für deutsche Städte)
-    preis_pro_qm = 3000  # Basisp Preis
-    preis_pro_qm += (stadt == 'München') * 4000
-    preis_pro_qm += (stadt == 'Berlin') * 2000
-    preis_pro_qm += (stadt == 'Hamburg') * 1500
-    preis_pro_qm += (stadt == 'Frankfurt') * 1800
-    
-    preis = flaeche * preis_pro_qm
-    preis *= (1 + 0.02 * etage)
-    preis *= (1 + 0.1 * garten)
-    preis *= (1 + 0.05 * balkon)
-    preis *= (1 - 0.03 * entfernung_bahn)
-    preis += np.random.normal(0, preis * 0.1, anzahl)
-    preis = preis.clip(50000, 2000000).astype(int)
-    
-    # DataFrame
-    df = pd.DataFrame({
-        'flaeche': flaeche,
-        'zimmer': zimmer,
-        'schlafzimmer': schlafzimmer,
-        'etage': etage,
-        'stadt': stadt,
-        'plz': plz,
-        'baujahr': baujahr,
-        'entfernung_bahn': entfernung_bahn,
-        'garten': garten,
-        'balkon': balkon,
-        'preis': preis
-    })
-    
-    return df
 
-# ============================================
-# FEATURE ENGINEERING
-# ============================================
+def generiere_daten(anzahl=1000, seed=42):
+    if anzahl < 10:
+        raise ValueError("At least 10 synthetic rows are required")
+    rng = np.random.default_rng(seed)
+    area = rng.normal(80, 30, anzahl).clip(30, 250).astype(int)
+    rooms = (area / 25 + rng.normal(0, 1, anzahl)).clip(1, 8).astype(int)
+    bedrooms = np.minimum((rooms * .5 + rng.normal(0, 1, anzahl)).clip(0, 5).astype(int), rooms)
+    floor = rng.integers(0, 10, anzahl)
+    city = rng.choice(CITIES, anzahl)
+    year = rng.integers(1950, 2023, anzahl)
+    distance = rng.uniform(0, 5, anzahl).round(1)
+    garden = rng.choice([0, 1], anzahl, p=[.4, .6])
+    balcony = rng.choice([0, 1], anzahl, p=[.3, .7])
+    # Arbitrary coefficients for an engineering demonstration, not current city prices.
+    per_m2 = 3000 + (city == "München") * 4000 + (city == "Berlin") * 2000 + (city == "Hamburg") * 1500 + (city == "Frankfurt") * 1800
+    price = (area * per_m2).astype(float)
+    price *= (1 + .02 * floor) * (1 + .1 * garden) * (1 + .05 * balcony) * (1 - .03 * distance)
+    price += rng.normal(0, price * .1, anzahl)
+    return pd.DataFrame(dict(flaeche=area, zimmer=rooms, schlafzimmer=bedrooms,
+                             etage=floor, stadt=city, baujahr=year, entfernung_bahn=distance,
+                             garten=garden, balkon=balcony, preis=price.clip(50000, 2000000).astype(int)))
 
-def erstelle_features(df):
-    """
-    Erstellt neue Features aus den Rohdaten
-    """
-    df = df.copy()
-    
-    # Preis pro m²
-    df['preis_pro_m2'] = df['preis'] / df['flaeche']
-    
-    # Alter der Immobilie
-    aktuelles_jahr = datetime.now().year
-    df['alter'] = aktuelles_jahr - df['baujahr']
-    
-    # Zimmer pro Fläche
-    df['zimmer_pro_m2'] = df['zimmer'] / df['flaeche'] * 100
-    
-    # Komfort-Score
-    df['komfort_score'] = df['garten'] + df['balkon'] + (df['etage'] > 0).astype(int)
-    
-    # Stadt-Kategorien (für One-Hot-Encoding)
-    df = pd.get_dummies(df, columns=['stadt'], prefix='stadt')
-    
-    return df
 
-# ============================================
-# MODELLTRAINING
-# ============================================
+def trainiere_modell(anzahl=2000, seed=42, output_dir="modelle", reference_year=REFERENCE_YEAR):
+    if reference_year < 2022:
+        raise ValueError("Reference year must cover the generated construction years (through 2022)")
+    data = generiere_daten(anzahl, seed)
+    X_train, X_test, y_train, y_test = train_test_split(
+        data.loc[:, RAW_COLUMNS], data["preis"], test_size=.2, random_state=seed)
+    pipeline = Pipeline([
+        ("features", FunctionTransformer(erstelle_features, kw_args={"reference_year": reference_year})),
+        ("scaler", StandardScaler()),
+        ("model", RandomForestRegressor(n_estimators=100, max_depth=10, random_state=seed, n_jobs=1)),
+    ])
+    output = Path(output_dir).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", (Path.cwd() / "mlruns").resolve().as_uri())
+    mlflow.set_tracking_uri(tracking_uri)
+    mlflow.set_experiment("immolens_synthetic_demo")
+    with mlflow.start_run(run_name=f"synthetic-seed-{seed}"):
+        pipeline.fit(X_train, y_train)
+        prediction = pipeline.predict(X_test)
+        metrics = {
+            "test_mae_eur": float(mean_absolute_error(y_test, prediction)),
+            "test_rmse_eur": float(np.sqrt(mean_squared_error(y_test, prediction))),
+            "test_r2": float(r2_score(y_test, prediction)),
+            "train_samples": len(X_train), "test_samples": len(X_test),
+        }
+        mlflow.log_params(dict(seed=seed, reference_year=reference_year, n_estimators=100, max_depth=10, data_mode="synthetic"))
+        mlflow.log_metrics(metrics)
+        temporary = output / "pipeline.joblib.tmp"
+        joblib.dump(pipeline, temporary)
+        checksum = hashlib.sha256(temporary.read_bytes()).hexdigest()
+        metadata = {
+            "schema_version": 1, "model_id": f"synthetic-rf-{checksum[:12]}",
+            "pipeline_sha256": checksum, "sklearn_version": sklearn.__version__,
+            "reference_year": reference_year, "seed": seed, "data_mode": "synthetic",
+            "target": "synthetic_total_price_eur", "currency": "EUR",
+            "data_period": None, "interval": None, "feature_columns": FEATURE_COLUMNS,
+            "coverage": {"cities": list(CITIES), "year_built": [1950, 2022], "area_m2": [30, 250]},
+            "metrics": metrics,
+            "limitations": ["Generated data only; not suitable for property valuation.", "Random synthetic holdout; no real-market or temporal validation.", "No calibrated prediction interval."],
+        }
+        temporary.replace(output / "pipeline.joblib")
+        meta_tmp = output / "metadata.json.tmp"
+        meta_tmp.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+        meta_tmp.replace(output / "metadata.json")
+        mlflow.log_artifact(str(output / "metadata.json"))
+        mlflow.log_artifact(str(output / "pipeline.joblib"))
+    print("Synthetic training complete (not a market valuation model).")
+    print(json.dumps(metrics, indent=2))
+    print(f"Bundle: {output}")
+    return pipeline, metadata
 
-def trainiere_modell():
-    """
-    Hauptfunktion zum Trainieren des Modells
-    """
-    print("="*60)
-    print("🏠 IMMOBILIENPREISVORHERSAGE - MODELLTRAINING")
-    print("="*60)
-    
-    # MLflow Experiment starten
-    mlflow.set_experiment("immobilien_preisvorhersage")
-    
-    with mlflow.start_run(run_name=f"training_{datetime.now().strftime('%Y%m%d_%H%M')}"):
-        
-        # 1. Daten generieren
-        print("\n📊 Generiere Trainingsdaten...")
-        df = generiere_daten(anzahl=2000)
-        print(f"   → {len(df)} Datensätze generiert")
-        
-        # 2. Feature Engineering
-        print("\n🔧 Feature Engineering...")
-        df_features = erstelle_features(df)
-        
-        # 3. Features und Zielvariable trennen
-        feature_cols = [col for col in df_features.columns if col != 'preis' and col != 'preis_pro_m2']
-        X = df_features[feature_cols]
-        y = df_features['preis']
-        
-        print(f"   → {len(feature_cols)} Features: {feature_cols[:5]}...")
-        
-        # 4. Train-Test-Split
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
-        print(f"   → Trainingsdaten: {len(X_train)}")
-        print(f"   → Testdaten: {len(X_test)}")
-        
-        # 5. Skalierung
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-        
-        # 6. Modell training
-        print("\n🤖 Trainiere Random Forest Modell...")
-        model = RandomForestRegressor(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42,
-            n_jobs=-1
-        )
-        model.fit(X_train_scaled, y_train)
-        
-        # 7. Evaluation
-        print("\n📈 Evaluierung...")
-        y_pred_train = model.predict(X_train_scaled)
-        y_pred_test = model.predict(X_test_scaled)
-        
-        # Metriken
-        train_r2 = r2_score(y_train, y_pred_train)
-        test_r2 = r2_score(y_test, y_pred_test)
-        test_mae = mean_absolute_error(y_test, y_pred_test)
-        test_rmse = np.sqrt(mean_squared_error(y_test, y_pred_test))
-        
-        print(f"\n{'='*40}")
-        print("ERGEBNISSE:")
-        print(f"{'='*40}")
-        print(f"Train R²:     {train_r2:.4f}")
-        print(f"Test R²:      {test_r2:.4f}")
-        print(f"Test MAE:     {test_mae:,.0f} €")
-        print(f"Test RMSE:    {test_rmse:,.0f} €")
-        print(f"{'='*40}")
-        
-        # 8. MLflow Logging
-        mlflow.log_params({
-            "n_estimators": 100,
-            "max_depth": 10,
-            "train_samples": len(X_train),
-            "test_samples": len(X_test),
-            "n_features": len(feature_cols)
-        })
-        
-        mlflow.log_metrics({
-            "train_r2": train_r2,
-            "test_r2": test_r2,
-            "test_mae": test_mae,
-            "test_rmse": test_rmse
-        })
-        
-        # 9. Feature Importance
-        feature_importance = dict(zip(feature_cols, model.feature_importances_))
-        wichtigste = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)[:5]
-        print("\n🔝 Wichtigste Features:")
-        for feat, imp in wichtigste:
-            print(f"   {feat}: {imp:.3f}")
-        
-        # 10. Modelle speichern
-        print("\n💾 Speichere Modelle...")
-        os.makedirs("modelle", exist_ok=True)
-        
-        joblib.dump(model, "modelle/random_forest_model.pkl")
-        joblib.dump(scaler, "modelle/scaler.pkl")
-        joblib.dump(feature_cols, "modelle/feature_cols.pkl")
-        
-        mlflow.sklearn.log_model(model, "modell")
-        
-        print("   ✅ Modell gespeichert: modelle/random_forest_model.pkl")
-        print("   ✅ Scaler gespeichert: modelle/scaler.pkl")
-        print("   ✅ Features gespeichert: modelle/feature_cols.pkl")
-        
-        print("\n✨ Training erfolgreich abgeschlossen!")
-        
-        return model, scaler, feature_cols
-
-# ============================================
-# HAUPTFUNKTION
-# ============================================
 
 if __name__ == "__main__":
-    model, scaler, features = trainiere_modell()
-    
-    # Beispielvorhersage
-    print("\n🔍 Beispielvorhersage:")
-    beispiel = pd.DataFrame([{
-        'flaeche': 85,
-        'zimmer': 4,
-        'schlafzimmer': 2,
-        'etage': 2,
-        'stadt_Berlin': 1,
-        'stadt_Frankfurt': 0,
-        'stadt_Hamburg': 0,
-        'stadt_Köln': 0,
-        'stadt_München': 0,
-        'stadt_Stuttgart': 0,
-        'plz': 10115,
-        'baujahr': 2010,
-        'entfernung_bahn': 0.5,
-        'garten': 1,
-        'balkon': 1,
-        'alter': 14,
-        'zimmer_pro_m2': 4.7,
-        'komfort_score': 3
-    }])
-    
-    # Sicherstellen, dass alle Spalten vorhanden sind
-    for col in features:
-        if col not in beispiel.columns:
-            beispiel[col] = 0
-    
-    beispiel = beispiel[features]
-    beispiel_scaled = scaler.transform(beispiel)
-    vorhersage = model.predict(beispiel_scaled)[0]
-    
-    print(f"   Geschätzter Preis: {vorhersage:,.0f} €")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--samples", type=int, default=2000)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--output-dir", default="modelle")
+    parser.add_argument("--reference-year", type=int, default=REFERENCE_YEAR)
+    args = parser.parse_args()
+    model, _ = trainiere_modell(args.samples, args.seed, args.output_dir, args.reference_year)
+    example = generiere_daten(10, args.seed).loc[[0], RAW_COLUMNS]
+    print(f"Synthetic example prediction: {model.predict(example)[0]:,.0f} EUR")

@@ -1,0 +1,24 @@
+name: Foundation checks
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      IMMOLENS_CI_PYTHON: ${{ matrix.os == 'windows-latest' && '.venv/Scripts/python.exe' || '.venv/bin/python' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m venv .venv
+      - run: '"$IMMOLENS_CI_PYTHON" -m pip install -r requirements-dev.txt'
+      - run: '"$IMMOLENS_CI_PYTHON" -m pip check'
+      - run: '"$IMMOLENS_CI_PYTHON" -m pytest -q'
