@@ -1,19 +1,17 @@
-# Supported runtime: Python 3.11 or 3.12 (Docker uses 3.12).
-pandas==2.2.3
+﻿# Runtime: Python 3.11 or 3.12
 numpy==2.2.3
-
-# Machine Learning
+pandas==2.2.3
 scikit-learn==1.6.1
 joblib==1.4.2
 
-# Visualization
+# Existing interface
 plotly==5.24.1
-
-# Streamlit
 streamlit==1.41.1
 
-# API and training imports
+# API
 fastapi==0.115.11
 uvicorn==0.34.0
 pydantic==2.10.6
+
+# Experiment tracking
 mlflow==2.20.3

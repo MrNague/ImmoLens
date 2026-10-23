@@ -7,3 +7,14 @@ mlruns/
 mlartifacts/
 *.db
 .env
+
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+modelle/
+mlruns/
+mlartifacts/
+.env
+frontend/node_modules/
+frontend/dist/
