@@ -31,9 +31,10 @@ def test_generator_is_reproducible_and_valid():
     assert "plz" not in a.columns
 
 
-def test_training_and_serving_use_identical_features():
+def test_training_and_serving_use_identical_features(bundle):
     row = pd.DataFrame([SAMPLE])
-    assert train.erstelle_features is api.erstelle_features
+    served_pipeline, _ = api.load_bundle(bundle[0])
+    assert served_pipeline.named_steps["features"].func is erstelle_features
     features = erstelle_features(row, reference_year=2026)
     assert list(features.columns) == FEATURE_COLUMNS
     assert features.alter.iloc[0] == 16
@@ -99,7 +100,7 @@ def test_missing_bundle_is_not_ready_and_does_not_reuse_old_model(bundle, tmp_pa
         assert client.get("/health").status_code == 200
     monkeypatch.setattr(api, "MODEL_DIR", tmp_path)
     with TestClient(api.app) as client:
-        assert client.get("/").json()["modell_geladen"] is False
+        assert client.get("/").json()["model_loaded"] is False
         assert client.get("/health").status_code == 503
         assert client.post("/predict", json=SAMPLE).status_code == 503
 
