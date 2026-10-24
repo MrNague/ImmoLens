@@ -1,4 +1,4 @@
-﻿"""ImmoLens API using the fitted training pipeline."""
+"""ImmoLens API using the fitted training pipeline."""
 
 from contextlib import asynccontextmanager
 import hashlib
@@ -232,6 +232,28 @@ def get_features():
         "features": FEATURE_COLUMNS,
         "anzahl": len(FEATURE_COLUMNS),
         "cities": CITIES,
+    }
+
+
+
+@app.get("/model")
+def get_model_info():
+    """Expose model metadata used by the frontend."""
+    metadata = getattr(app.state, "metadata", None)
+    pipeline = getattr(app.state, "pipeline", None)
+
+    if pipeline is None or metadata is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Model unavailable. Train the model and restart the API.",
+        )
+
+    return {
+        "model_id": metadata["model_id"],
+        "data_mode": metadata["data_mode"],
+        "reference_year": metadata["reference_year"],
+        "coverage": metadata["coverage"],
+        "metrics": metadata["metrics"],
     }
 
 

@@ -1,0 +1,6 @@
+Geographic data: GeoNames, https://www.geonames.org/
+License: Creative Commons Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
+Downloaded: 2026-10-23T19:43:43.363044+00:00
+Filtered to populated places and administrative seats.
+Geographic availability does not imply model coverage.
