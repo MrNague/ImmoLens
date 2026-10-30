@@ -839,3 +839,183 @@ footer {
     padding: 15px 0;
   }
 }
+
+
+/* ImmoLens — noir, bleu électrique et touches de rouge néon */
+@media screen {
+  html:root,
+  html:root[data-theme] {
+    --im-red: #ff073a;
+    --im-red-soft: #ff8096;
+    --im-blue: #007bff;
+    --im-blue-soft: #80baff;
+
+    --im-page: #101113;
+    --im-surface: #191b1f;
+    --im-field: #202328;
+
+    color-scheme: dark;
+  }
+
+  /* Barre supérieure noire, sans effet lumineux */
+  html:root .site-header {
+    background: #000;
+    border: 0;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 32%);
+  }
+
+  /* Petite signature rouge à côté du nom ImmoLens */
+  html:root .brand span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #e6e8ec;
+  }
+
+  html:root .brand span::after {
+    content: "";
+    display: block;
+    flex: 0 0 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--im-red);
+  }
+
+  /* Accent rouge discret au-dessus du titre principal */
+  html:root .page-heading h1::before {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 5px;
+    margin-bottom: 18px;
+    border-radius: 3px;
+    background: var(--im-red);
+  }
+
+  html:root .page-heading h1 {
+    color: #e6e8ec;
+    text-wrap: balance;
+  }
+
+  html:root h2 {
+    color: var(--im-blue-soft);
+  }
+
+  /* Navigation : bleu pour identifier la page active */
+  html:root .navigation button {
+    color: #adb3bc;
+    transition: color 160ms ease, background-color 160ms ease;
+  }
+
+  html:root .navigation button:hover {
+    color: #e6e8ec;
+  }
+
+  html:root .navigation button.active {
+    color: var(--im-blue-soft);
+  }
+
+  html:root .navigation button.active::after {
+    display: none;
+  }
+
+  /* Surfaces calmes, sans cadres ni dégradés */
+  html:root .card,
+  html:root .price-card {
+    background: var(--im-surface);
+    background-image: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  html:root .steps,
+  html:root .form-actions,
+  html:root .price-caption,
+  html:root .site-footer,
+  html:root .history-row + .history-row,
+  html:root .metrics-grid > div + div {
+    border: 0;
+  }
+
+  /* Action principale : bleu électrique */
+  html:root .primary {
+    background: var(--im-blue);
+    border-color: transparent;
+    color: #070b12;
+    font-weight: 700;
+    box-shadow: none;
+    transition: background-color 160ms ease;
+  }
+
+  html:root .primary:hover:not(:disabled) {
+    background: #3395ff;
+  }
+
+  html:root .primary:active:not(:disabled) {
+    background: #1988ff;
+  }
+
+  /* Actions secondaires neutres */
+  html:root .secondary {
+    background: #25282e;
+    border-color: transparent;
+    color: #e6e8ec;
+  }
+
+  html:root .secondary:hover:not(:disabled) {
+    background: #30343b;
+  }
+
+  /* Le rouge des erreurs reste accompagné d'un message */
+  html:root .form-error {
+    background: #342126;
+    border: 0;
+    color: #ffb6c2;
+  }
+
+  html:root .clear-history {
+    color: var(--im-red-soft);
+  }
+
+  html:root .clear-history:hover {
+    color: #ffb6c2;
+  }
+
+  /* Focus visible pour la navigation au clavier */
+  html:root :focus-visible {
+    outline: 3px solid var(--im-blue-soft);
+    outline-offset: 4px;
+  }
+}
+
+/* Mobile : conserver des accents compacts */
+@media screen and (max-width: 640px) {
+  html:root .brand span {
+    gap: 6px;
+  }
+
+  html:root .brand span::after {
+    flex-basis: 5px;
+    width: 5px;
+    height: 5px;
+  }
+
+  html:root .page-heading h1::before {
+    width: 22px;
+    height: 4px;
+    margin-bottom: 14px;
+  }
+
+  html:root .navigation button.active {
+    background: #192a40;
+    color: #a8d0ff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root .navigation button,
+  html:root .primary {
+    transition: none;
+  }
+}
