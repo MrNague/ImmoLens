@@ -1088,3 +1088,779 @@ main {
     font-size: clamp(2.5rem, 12vw, 3.7rem);
   }
 }
+
+
+/* =========================================================
+   IMMOLENS — STEP 3
+   PREMIUM ESTIMATOR WORKSPACE
+   ========================================================= */
+
+.form-layout {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.65fr);
+  gap: 24px;
+
+  align-items: start;
+}
+
+/* ---------------------------------------------------------
+   MAIN FORM CARD
+   --------------------------------------------------------- */
+
+.form-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: clamp(28px, 3.5vw, 48px);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      rgba(20, 120, 255, 0.08),
+      transparent 28%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(12, 15, 24, 0.97),
+      rgba(5, 7, 12, 0.99)
+    );
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+/* subtle electric blue line */
+.form-card::before {
+  position: absolute;
+
+  top: 0;
+  left: 6%;
+
+  width: 230px;
+  height: 1px;
+
+  content: "";
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(20, 120, 255, 0.95),
+      transparent
+    );
+
+  box-shadow:
+    0 0 18px rgba(20, 120, 255, 0.7);
+
+  pointer-events: none;
+}
+
+.form-card h2 {
+  margin-bottom: 10px;
+
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: 600;
+
+  color: #ffffff;
+}
+
+.section-description {
+  max-width: 720px;
+  margin-bottom: 32px;
+
+  color: #8f98a8;
+
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* ---------------------------------------------------------
+   STEPS
+   --------------------------------------------------------- */
+
+.steps {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 0;
+
+  margin: 0 0 42px;
+  padding: 0 0 28px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.steps li {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #667081;
+
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.steps li > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 31px;
+  height: 31px;
+
+  flex-shrink: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+
+  background: #11151d;
+
+  color: #778092;
+
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.steps .current {
+  color: #dbe7ff;
+}
+
+.steps .current > span {
+  border-color: rgba(39, 132, 255, 0.75);
+
+  background:
+    linear-gradient(
+      145deg,
+      #1978ff,
+      #0755d7
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(20, 120, 255, 0.08),
+    0 0 20px rgba(20, 120, 255, 0.32);
+}
+
+.steps .done {
+  color: #8799b9;
+}
+
+.steps .done > span {
+  border-color: rgba(20, 120, 255, 0.25);
+
+  background: rgba(20, 120, 255, 0.12);
+
+  color: #75a8ff;
+}
+
+/* ---------------------------------------------------------
+   FIELDS
+   --------------------------------------------------------- */
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 22px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 9px;
+
+  min-width: 0;
+
+  color: #dce2ed;
+
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.field > span:first-child {
+  color: #cbd2df;
+
+  font-size: 0.78rem;
+  letter-spacing: 0.015em;
+}
+
+.field small {
+  color: #646d7d;
+
+  font-size: 0.69rem;
+  font-weight: 400;
+}
+
+/* inputs */
+.field input,
+.field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+
+  padding: 0 15px;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 11px;
+
+  outline: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15, 18, 26, 0.98),
+      rgba(10, 12, 18, 0.98)
+    );
+
+  color: #f7f8fb;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: rgba(93, 151, 255, 0.28);
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #267cff;
+
+  background: #0b0e15;
+
+  box-shadow:
+    0 0 0 3px rgba(20, 120, 255, 0.1),
+    0 0 22px rgba(20, 120, 255, 0.08);
+}
+
+.field input::placeholder {
+  color: #505868;
+}
+
+/* ---------------------------------------------------------
+   INPUT UNITS
+   --------------------------------------------------------- */
+
+.input-wrap {
+  display: flex;
+  align-items: stretch;
+}
+
+.input-wrap input {
+  flex: 1;
+}
+
+.input-wrap:has(.input-unit) input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-unit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 52px;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 0;
+
+  border-radius: 0 11px 11px 0;
+
+  background: #141822;
+
+  color: #777f8f;
+
+  font-size: 0.76rem;
+}
+
+/* ---------------------------------------------------------
+   GARDEN / BALCONY
+   --------------------------------------------------------- */
+
+.amenities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-top: 26px;
+}
+
+.check-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 62px;
+
+  padding: 16px 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 21, 29, 0.9),
+      rgba(10, 12, 17, 0.95)
+    );
+
+  color: #d8dee8;
+
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.check-card:hover {
+  border-color: rgba(20, 120, 255, 0.3);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 27, 38, 0.95),
+      rgba(11, 14, 21, 0.98)
+    );
+
+  transform: translateY(-1px);
+}
+
+.check-card input {
+  width: 19px;
+  height: 19px;
+
+  accent-color: #1478ff;
+}
+
+/* ---------------------------------------------------------
+   FORM ACTIONS
+   --------------------------------------------------------- */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 36px;
+  padding-top: 28px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.form-actions .secondary {
+  margin-right: auto;
+}
+
+.button {
+  min-height: 48px;
+
+  padding: 0 22px;
+
+  border-radius: 10px;
+
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  letter-spacing: 0.01em;
+}
+
+.primary {
+  position: relative;
+  overflow: hidden;
+
+  border: 1px solid rgba(68, 148, 255, 0.55);
+
+  background:
+    linear-gradient(
+      135deg,
+      #167cff 0%,
+      #0752d9 100%
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 10px 30px rgba(20, 120, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #2b8cff,
+      #1261e6
+    );
+
+  box-shadow:
+    0 14px 36px rgba(20, 120, 255, 0.32),
+    0 0 26px rgba(20, 120, 255, 0.12);
+}
+
+.secondary {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  background: rgba(15, 18, 25, 0.92);
+
+  color: #d6dbe4;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.2);
+
+  background: rgba(23, 27, 37, 0.96);
+}
+
+/* ---------------------------------------------------------
+   SUMMARY CARD — PROPERTY SNAPSHOT
+   --------------------------------------------------------- */
+
+.summary-card {
+  position: sticky;
+  top: 100px;
+
+  min-height: auto;
+
+  padding: 28px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(255, 23, 77, 0.055),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(20, 120, 255, 0.08),
+      transparent 35%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(15, 18, 26, 0.97),
+      rgba(6, 8, 13, 0.99)
+    );
+
+  box-shadow:
+    0 25px 65px rgba(0, 0, 0, 0.3);
+}
+
+/* remove the old duplicated house */
+.summary-card::before,
+.summary-card::after {
+  display: none;
+}
+
+.summary-card .card-title {
+  margin-top: 0;
+  margin-bottom: 32px;
+
+  color: #ffffff;
+}
+
+.summary-card .card-title svg {
+  color: #4591ff;
+}
+
+.summary-card .card-title h2 {
+  margin: 0;
+
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-city {
+  margin: 0 0 8px;
+
+  color: #ffffff;
+
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+
+  letter-spacing: -0.04em;
+}
+
+.summary-card > p:not(.muted) {
+  color: #a5adbb;
+}
+
+.summary-card hr {
+  margin: 28px 0;
+
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summary-card .badge {
+  margin-bottom: 16px;
+}
+
+.summary-card .muted {
+  margin: 10px 0 18px;
+
+  color: #727b8a;
+
+  line-height: 1.65;
+}
+
+.summary-card .text-button {
+  color: #6fa5ff;
+
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------
+   LOCATION PICKER
+   --------------------------------------------------------- */
+
+.location-picker {
+  display: contents;
+}
+
+.location-results {
+  grid-column: 1 / -1;
+
+  margin-top: 4px;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 13px;
+
+  background: rgba(8, 10, 16, 0.75);
+
+  overflow: hidden;
+}
+
+.location-results > .muted {
+  margin: 0;
+  padding: 12px 15px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  font-size: 0.73rem;
+}
+
+.city-results {
+  max-height: 220px;
+
+  margin: 0;
+  padding: 6px;
+
+  overflow-y: auto;
+
+  list-style: none;
+}
+
+.city-results li {
+  margin: 0;
+}
+
+.city-results button {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #d8dde6;
+
+  text-align: left;
+}
+
+.city-results button:hover {
+  background: rgba(20, 120, 255, 0.08);
+}
+
+.city-results button[aria-pressed="true"] {
+  background: rgba(20, 120, 255, 0.13);
+
+  color: #ffffff;
+}
+
+.city-results strong {
+  display: block;
+
+  font-size: 0.82rem;
+}
+
+.city-results small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #677182;
+
+  font-size: 0.67rem;
+}
+
+.location-status {
+  grid-column: 1 / -1;
+
+  padding: 15px 17px;
+
+  border-left: 2px solid #1478ff;
+  border-radius: 0 10px 10px 0;
+
+  background: rgba(20, 120, 255, 0.055);
+}
+
+.location-status strong {
+  color: #dce8ff;
+
+  font-size: 0.8rem;
+}
+
+.location-status p {
+  margin: 5px 0 0;
+
+  color: #778398;
+
+  font-size: 0.74rem;
+}
+
+.location-credit {
+  grid-column: 1 / -1;
+
+  margin: 0;
+
+  color: #555e6d;
+
+  font-size: 0.66rem;
+}
+
+.location-credit a {
+  color: #687da4;
+}
+
+/* ---------------------------------------------------------
+   REVIEW / NOTICE
+   --------------------------------------------------------- */
+
+.notice {
+  margin-top: 26px;
+
+  padding: 17px 18px;
+
+  border: 1px solid rgba(20, 120, 255, 0.11);
+  border-radius: 12px;
+
+  background: rgba(20, 120, 255, 0.055);
+}
+
+.notice p {
+  color: #8390a4;
+
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.form-error {
+  margin-top: 20px;
+
+  padding: 14px 16px;
+
+  border: 1px solid rgba(255, 23, 77, 0.22);
+  border-radius: 10px;
+
+  background: rgba(255, 23, 77, 0.07);
+
+  color: #ff8aa4;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------- */
+
+@media (max-width: 1050px) {
+  .form-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-card {
+    position: relative;
+    top: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .form-card {
+    padding: 24px 18px;
+
+    border-radius: 18px;
+  }
+
+  .fields,
+  .amenities {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    gap: 8px;
+  }
+
+  .steps li {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 7px;
+
+    font-size: 0.69rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .button,
+  .form-actions .secondary {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .summary-card {
+    padding: 22px;
+  }
+}
