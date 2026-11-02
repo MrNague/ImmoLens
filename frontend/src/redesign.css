@@ -183,8 +183,9 @@ a:focus-visible {
 }
 
 .site-header {
-  position: relative;
-  z-index: 100;
+  position: fixed !important;
+  top: 0;
+  z-index: 1000;
 
   display: grid;
   grid-template-columns: auto auto 1fr auto;
@@ -205,6 +206,7 @@ a:focus-visible {
     0 16px 50px rgba(0, 0, 0, 0.34);
 
   backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
 .site-header::before {
@@ -3363,4 +3365,45 @@ fieldset {
   .landing-page::before {
     height: 78%;
   }
+}
+
+/* =========================================================
+   FIXED GLOBAL HEADER
+   ========================================================= */
+
+:root {
+  --header-height: 82px;
+}
+
+.site-header {
+  position: fixed !important;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  width: 100% !important;
+  height: var(--header-height);
+  min-height: var(--header-height);
+
+  z-index: 9999;
+
+  background: rgba(2, 3, 8, 0.92);
+
+  border-bottom: 1px solid rgba(150, 172, 255, 0.18);
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.45),
+    0 1px 18px rgba(22, 133, 255, 0.08);
+
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+/*
+  The fixed header is removed from the normal document flow.
+  Reserve its 82px here so the page does not disappear underneath it.
+*/
+#main {
+  padding-top: var(--header-height) !important;
 }
